@@ -1,100 +1,71 @@
-# WebServer
-用C++实现的高性能WEB服务器，经过webbenchh压力测试可以实现上万的QPS
+# Cpp-webserver
 
-## 功能
-* 利用IO复用技术Epoll与线程池实现多线程的Reactor高并发模型；
-* 利用正则与状态机解析HTTP请求报文，实现处理静态资源的请求；
-* 利用标准库容器封装char，实现自动增长的缓冲区；
-* 基于小根堆实现的定时器，关闭超时的非活动连接；
-* 利用单例模式与阻塞队列实现异步的日志系统，记录服务器运行状态；
-* 利用RAII机制实现了数据库连接池，减少数据库连接建立与关闭的开销，同时实现了用户注册登录功能。
+## 1.项目描述
 
-* 增加logsys,threadpool测试单元(todo: timer, sqlconnpool, httprequest, httpresponse) 
+Linux 下 C++ 轻量级 Web 服务器.
+其主要功能是通过 HTTP 协议与客户端（通常是浏览器（Browser））进行通信，来接收，存储，处理来自客户端的 HTTP 请求，并对其请求做出 HTTP 响应，返回给客户端其请求的内容（文件、网页等）或返回一个 Error 信息。
 
-## 环境要求
-* Linux
-* C++14
-* MySql
+## 2.所用技术
 
-## 目录树
+- 使用 线程池处理数据
+- socket 通信
+- epoll 监听文件描述符数据
+- 使用状态机解析 HTTP 请求报文
+- 同步 IO 模拟 Proactor 的并发模型
+
+
+## 3.设计框架
+
+<div align=center>
+<img width="699" alt="image" src="https://user-images.githubusercontent.com/22310531/153018656-0d1f891d-7bf4-430d-b01c-e04bab9b69e5.png">
+</div>
+
+
+<div align=center>
+<img width="273" alt="image" src="https://github.com/XuDaHaoRen/Cpp-webserver/blob/main/%E6%9C%8D%E5%8A%A1%E5%99%A8.png">
+</div>
+
+
+
+
+
+## 4.项目如何执行
+
 ```
-.
-├── code           源代码
-│   ├── buffer
-│   ├── config
-│   ├── http
-│   ├── log
-│   ├── timer
-│   ├── pool
-│   ├── server
-│   └── main.cpp
-├── test           单元测试
-│   ├── Makefile
-│   └── test.cpp
-├── resources      静态资源
-│   ├── index.html
-│   ├── image
-│   ├── video
-│   ├── js
-│   └── css
-├── bin            可执行文件
-│   └── server
-├── log            日志文件
-├── webbench-1.5   压力测试
-├── build          
-│   └── Makefile
-├── Makefile
-├── LICENSE
-└── readme.md
+1.将根目录的所有程序进行 g++ 操作，要带 pthread 参数
+g++ *.cpp -o main
+2../main 10000 
+3.键入界面在浏览器中
+IP:10000/index.html
+
 ```
 
+## 5.压力测试
 
-## 项目启动
-需要先配置好对应的数据库
-```bash
-// 建立yourdb库
-create database yourdb;
+压力测试使用 webbench 
+基本原理：Webbench 首先 fork 出多个子进程，每个子进程都循环做 web 访问测试，子进程把访问的结果通过 pipe 告诉父进程，父进程统计结果显示在控制台
 
-// 创建user表
-USE yourdb;
-CREATE TABLE user(
-    username char(50) NULL,
-    password char(50) NULL
-)ENGINE=InnoDB;
-
-// 添加数据
-INSERT INTO user(username, password) VALUES('name', 'password');
 ```
-
-```bash
+1.保存路径
+webbench.o 保存在 test_presure
+2.运行 webbench 时先 make 一下
 make
-./bin/server
+3.执行指令
+./webbench -c 1000 -t 30 http://192.168.110.129:10000/index.html
+-c 连接的客户端数
+-t 时间
 ```
 
-## 单元测试
-```bash
-cd test
-make
-./test
-```
+<img width="627" alt="image" src="https://pic-1310558294.cos.ap-shanghai.myqcloud.com/img/202209111318615.png">
+使用 1000 个进程连接，访问 5 s ;每分钟可以访问 360900 个 page;956385 bytes/s;其中有 30075 个请求成功，0 个失败
 
-## 压力测试
-![image-webbench](https://github.com/markparticle/WebServer/blob/master/readme.assest/%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95.png)
-```bash
-./webbench-1.5/webbench -c 100 -t 10 http://ip:port/
-./webbench-1.5/webbench -c 1000 -t 10 http://ip:port/
-./webbench-1.5/webbench -c 5000 -t 10 http://ip:port/
-./webbench-1.5/webbench -c 10000 -t 10 http://ip:port/
-```
-* 测试环境: Ubuntu:19.10 cpu:i5-8400 内存:8G 
-* QPS 10000+
 
-## TODO
-* config配置
-* 完善单元测试
-* 实现循环缓冲区
+## 6.运行环境
 
-## 致谢
-Linux高性能服务器编程，游双著.
+Linux ： 20.04
+浏览器：FireFox
 
-[@qinguoyi](https://github.com/qinguoyi/TinyWebServer)
+
+## 7.参考资料
+
+牛客网高并发服务器项目：https://www.nowcoder.com/courses/cover/live/504
