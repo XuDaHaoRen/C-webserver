@@ -66,6 +66,3 @@ Linux ： 20.04
 浏览器：FireFox
 
 
-## 7.参考资料
-
-牛客网高并发服务器项目：https://www.nowcoder.com/courses/cover/live/504
